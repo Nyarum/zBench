@@ -262,8 +262,7 @@ pub const Benchmark = struct {
 
     /// Run all benchmarks and collect timing information.
     pub fn run(self: Benchmark, writer: anytype) !void {
-        var progress = std.Progress{};
-        const progress_node = progress.start("", 0);
+        const progress_node = std.Progress.start(.{});
         defer progress_node.end();
 
         // Most allocations for pretty printing will be the same size each time,
@@ -277,15 +276,11 @@ pub const Benchmark = struct {
             .progress => |p| {
                 progress_node.setEstimatedTotalItems(p.total_runs);
                 progress_node.setCompletedItems(p.completed_runs);
-                progress_node.setName(p.current_name);
-                progress.maybeRefresh();
             },
             .result => |x| {
                 defer x.deinit();
-                progress_node.setName("");
                 progress_node.setEstimatedTotalItems(0);
                 progress_node.setCompletedItems(0);
-                progress.refresh();
                 try x.prettyPrint(arena.allocator(), writer, true);
                 _ = arena.reset(.retain_capacity);
             },
